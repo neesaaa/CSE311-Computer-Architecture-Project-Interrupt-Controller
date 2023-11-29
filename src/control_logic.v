@@ -11,6 +11,7 @@ module control (
     output reg [7:0] vector_address
     reg flag ;
     reg[7:0] icw1,icw2,icw3,icw4;
+    wire [2:0] out ;
 );
 
 wire isIntrupt;
@@ -18,18 +19,18 @@ wire send_vector;
 integer numberOfAck = 0;
 
 assign isIntrupt = |(IRR);
-encoder isr_encoder (.out(vector_address), .in(ISR));
+encoder isr_encoder (.out(out), .in(ISR));
 DataBusBuffer m0(.Direction(Direction),.Rxdata(dataBus));
 ()// intatiate read write logic to take WR signal and A0 (alert)!!
 
 always @(negedge WR) begin //count icw words
-if (dataBus[4]==1 & A0==0) begin
+if (dataBus[4]==1 & A0==0) begin // to check if it is ICW or not
     flag<=1 ;
     count<=1 ;
     ICW1<=dataBus;
 end
 else if (flag) begin
-    count <= count + 1;
+    count = count + 1; //adel 
     if (count == 2)
         icw2 <= dataBus;
     else if (count == 3 & icw1[1] == 1 & icw1[0] == 0) // no icw3 and no icw4
@@ -52,7 +53,8 @@ always @(negedge INTA) begin
         numberOfAck <= 0;
         vector_address<={icw2[7:3],out} //concatinating number of interupt with T7-T3
     end
-    numberOfAck <= numberOfAck + 1;
+    else
+       numberOfAck <= numberOfAck + 1;
 end
 
 always @(*) begin

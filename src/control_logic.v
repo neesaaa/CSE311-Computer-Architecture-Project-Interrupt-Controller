@@ -40,7 +40,7 @@ module DataBusBuffer (
   input wire [7:0] from_pc,
   input wire [7:0] from_pic,
   output wire [7:0] Rxdata,
-  output reg [7:0] Txdata,
+  output wire [7:0] Txdata,
 );
 
   reg [7:0] buffer;         

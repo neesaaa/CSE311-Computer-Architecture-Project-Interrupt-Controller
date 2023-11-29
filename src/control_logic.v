@@ -16,6 +16,7 @@ always @(negedge INTA) begin
     if (numberOfAck == 2) begin
         numberOfAck <= 0;
     end
+    else 
     numberOfAck <= numberOfAck + 1;
 end
 

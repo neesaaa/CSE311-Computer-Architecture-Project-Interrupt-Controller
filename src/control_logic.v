@@ -18,7 +18,7 @@ localparam idle=00;
 localparam ICW2=01;
 localparam ICW3=11;
 localparam ICW4=10 ;
-reg [1:0] currentstate=idle,nextstate ;
+reg [1:0] currentstate,nextstate=idle ;
 
 reg numberOfAck = 0; 
 
@@ -32,7 +32,8 @@ DataBusBuffer m0(.Direction(Direction),.Rxdata(dataBus));
 //  FSM to detect ICW
 always @(negedge WR) //state memory
     currentstate<=nextstate ;
-always@(currenstate ,dataBus,A0 ) begin // next state logic 
+    
+always@(currentstate ,dataBus,A0 ) begin // next state logic 
     case (currentstate)
         idle:if (dataBus[4]==1 && A0==0)  // to check if it is ICW or not
                 nextstate<=ICW2
@@ -49,7 +50,7 @@ always@(currenstate ,dataBus,A0 ) begin // next state logic
         ICW4: nextstate<=idle ; 
     endcase
 end
-always@(currenstate ,dataBus,A0) begin // output logic
+always@(currentstate ,dataBus,A0) begin // output logic
    case(currentstate)
     idle:if (dataBus[4]==1 && A0==0) 
          icw1<=dataBus;

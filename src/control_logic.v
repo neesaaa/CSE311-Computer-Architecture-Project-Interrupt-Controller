@@ -4,11 +4,12 @@ module control (
     input [7:0] IRR,
     input [7:0] priority,
     input [7:0] ISR,
-    output  Direction ,
     input [7:0] dataBus,
+    input WR,A0,RD ;
+    output  Direction ,
     output reg fromControlLogic_toPriorityResolver,
     output reg [7:0] vector_address,
-    output reg resetIRRbit,
+    output reg resetIRRbit 
     
 );
 reg[7:0] icw1,icw2,icw3,icw4; 
@@ -18,22 +19,24 @@ localparam idle=00;
 localparam ICW2=01;
 localparam ICW3=11;
 localparam ICW4=10 ;
-reg [1:0] currentstate,nextstate=idle ;
-
-reg numberOfAck = 0; 
+reg [1:0] currentstate=idle,nextstate ;
+ 
+wire isIntrupt;
+wire send_vector;
+integer numberOfAck = 0;
 
 //inistantiations
 encoder isr_encoder (.out(out), .in(ISR));
 DataBusBuffer m0(.Direction(Direction),.Rxdata(dataBus));
-()// intatiate read write logic to take WR signal and A0 (alert)!!
+Read_write_logic m1(.WR_out(WR),.A0(A0),.RD_out(RD))
 
 
 
 //  FSM to detect ICW
-always @(negedge WR) //state memory
+always @(negedge WR) begin //state memory
     currentstate<=nextstate ;
-    
-always@(currentstate ,dataBus,A0 ) begin // next state logic 
+end
+always@(currenstate ,dataBus,A0 ) begin // next state logic 
     case (currentstate)
         idle:if (dataBus[4]==1 && A0==0)  // to check if it is ICW or not
                 nextstate<=ICW2
@@ -50,13 +53,15 @@ always@(currentstate ,dataBus,A0 ) begin // next state logic
         ICW4: nextstate<=idle ; 
     endcase
 end
-always@(currentstate ,dataBus,A0) begin // output logic
+always@(currenstate ,dataBus,A0) begin // output logic
    case(currentstate)
-    idle:if (dataBus[4]==1 && A0==0) 
+    idle:if (dataBus[4]==1 && A0==0) begin
+         Direction=1;
          icw1<=dataBus;
-    ICW2: icw2<=dataBus;
-    ICW3: icw3<=dataBus;
-    ICW4: icw4<=dataBus;
+    end
+    ICW2: begin Direction=1; icw2<=dataBus;end
+    ICW3:begin Direction=1; icw3<=dataBus;end
+    ICW4: begin Direction=1; icw4<=dataBus;end
    endcase
    
 end
@@ -67,6 +72,7 @@ end
 always @(negedge INTA) begin   
     if (numberOfAck == 2) begin
         numberOfAck <= 0;
+        Direction=0;
         vector_address<={icw2[7:3],out} //concatinating number of interupt(out) with T7-T3
     end
     else

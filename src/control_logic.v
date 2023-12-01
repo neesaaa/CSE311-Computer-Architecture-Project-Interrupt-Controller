@@ -35,24 +35,14 @@ always @(*) begin
 end
     
 endmodule
-module DataBusBuffer (    
-  input wire direction,    //1 read from pc 0 write on pc
-  input wire [7:0] from_pc,
-  input wire [7:0] from_pic,
-  output wire [7:0] Rxdata,
-  output wire [7:0] Txdata,
+module DataBusBuffer (
+    inout [7:0] data, //internal bus when send ** output **  or bus from pc when read so **input** 
+    input direction,  //1>>sending to pc
+    input [7:0] Rx_data, //recieved data
+    input [7:0] Tx_Data //sent data
 );
-
-  reg [7:0] buffer;         
-
-  
-  always @(*) begin
-    if (direction) begin
-    Txdata <= 8'bzzzzzzzz; 
-    buffer <= from_pc;
-    end      
-  end
-  assign Rxdata = buffer; //reading
-  assign Txdata = from_pic;
+ 
+assign data = direction ? Tx_Data : 8'bZ;
+assign Rx_Data = data;
 
 endmodule

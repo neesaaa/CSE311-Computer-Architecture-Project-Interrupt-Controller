@@ -16,12 +16,12 @@ output reg INT;
 
 reg[7:0] icw1,icw2,icw3,icw4; 
 wire [2:0] out ; // for encoder
-//grey coded states for ICW FSM 
-parameter idle=00;
-parameter ICW2=01;
-parameter ICW3=11;
-parameter ICW4=10 ;
-reg [1:0] currentstate=idle,nextstate ;
+//one hot coded states for ICW FSM 
+parameter idle=0001;
+parameter ICW2=0010;
+parameter ICW3=0100;
+parameter ICW4=1000 ;
+ reg [1:0] currentstate,nextstate=idle ;
  
 wire isIntrupt;
 wire send_vector;
@@ -31,7 +31,7 @@ integer numberOfAck = 0;
 encoder isr_encoder (.out(out), .in(ISR));
 DataBusBuffer m0(.Direction(Direction),.Rxdata(dataBus));
 Read_write_logic m1(.WR_out(WR),.A0(A0),.RD_out(RD));
-
+// instantiaton for priority resolver to get INT signal
 
 
 //  FSM to detect ICW
@@ -83,22 +83,7 @@ always @(negedge INTA) begin
 
 end
 
-// block to drive INT signal and reset the crosponding IRR bit and to set ISR bit
-always @(*) begin
-    if (numberOfAck==1) begin
-        resetIRRbit=1;
-        fromControlLogic_toPriorityResolver=1;
-    end
-    if (numberOfAck!=1) begin
-        resetIRRbit=0;
-        fromControlLogic_toPriorityResolver=0;
-    end
-    if ( |(IRR) && numberOfAck==0)
-        INT <= 1;
-    else
-        INT <= 0;
- 
-end
+
     
 endmodule
 

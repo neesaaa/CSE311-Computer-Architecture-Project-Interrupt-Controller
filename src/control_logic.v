@@ -66,7 +66,7 @@ always@(currentstate ,dataBus,A0) begin // output logic
     ICW3:begin Direction=1; icw3<=dataBus;end
     ICW4: begin Direction=1; icw4<=dataBus;end
    endcase
-   
+
 end
 
 
